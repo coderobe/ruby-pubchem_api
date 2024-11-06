@@ -1,0 +1,886 @@
+openapi: "3.0.1"
+info:
+  title: "PubChem PUG REST API"
+  description: "Comprehensive API schema for accessing PubChem data and services."
+  version: "1.0.0"
+
+servers:
+  - url: "https://pubchem.ncbi.nlm.nih.gov/rest/pug"
+
+paths:
+
+  /compound/cid/{cid}/{operation}/{output}:
+    get:
+      summary: "Retrieve compound data by CID"
+      description: "Fetch compound information for a given CID with specific operations and output format."
+      parameters:
+        - $ref: '#/components/parameters/CID'
+        - $ref: '#/components/parameters/CompoundOperation'
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Successful response with compound data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompoundRecord'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CompoundRecord'
+            text/csv:
+              schema:
+                type: string
+        '400':
+          description: "Invalid request format or parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Compound not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compound/name/{name}/{operation}/{output}:
+    get:
+      summary: "Retrieve compound data by name"
+      description: "Fetch compound information for a given compound name with specific operations and output format."
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: "Compound name"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/CompoundOperation'
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Successful response with compound data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompoundRecord'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CompoundRecord'
+            text/csv:
+              schema:
+                type: string
+        '404':
+          description: "Compound not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /substance/sid/{sid}/{operation}/{output}:
+    get:
+      summary: "Retrieve substance data by SID"
+      description: "Fetch substance information for a given SID with specific operations and output format."
+      parameters:
+        - $ref: '#/components/parameters/SID'
+        - $ref: '#/components/parameters/SubstanceOperation'
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Successful response with substance data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubstanceRecord'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/SubstanceRecord'
+            text/csv:
+              schema:
+                type: string
+        '404':
+          description: "Substance not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /assay/aid/{aid}/{operation}/{output}:
+    get:
+      summary: "Retrieve assay data by AID"
+      description: "Fetch assay information for a given AID with specific operations and output format."
+      parameters:
+        - $ref: '#/components/parameters/AID'
+        - $ref: '#/components/parameters/AssayOperation'
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Successful response with assay data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssayRecord'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AssayRecord'
+        '404':
+          description: "Assay not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /gene/geneid/{geneid}/summary/{output}:
+    get:
+      summary: "Retrieve gene summary by GeneID"
+      description: "Fetch gene summary information for a given GeneID and output format."
+      parameters:
+        - $ref: '#/components/parameters/GeneID'
+        - $ref: '#/components/parameters/OutputFormatSimple'
+      responses:
+        '200':
+          description: "Successful response with gene data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneSummary'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GeneSummary'
+        '404':
+          description: "Gene not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /taxonomy/taxid/{taxid}/summary/{output}:
+    get:
+      summary: "Retrieve taxonomy summary by TaxonomyID"
+      description: "Fetch taxonomy summary information for a given TaxonomyID and output format."
+      parameters:
+        - $ref: '#/components/parameters/TaxID'
+        - $ref: '#/components/parameters/OutputFormatSimple'
+      responses:
+        '200':
+          description: "Successful response with taxonomy data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomySummary'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/TaxonomySummary'
+        '404':
+          description: "Taxonomy ID not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pathway/pwacc/{pwacc}/summary/{output}:
+    get:
+      summary: "Retrieve pathway summary by pathway accession"
+      description: "Fetch pathway summary information for a given pathway accession and output format."
+      parameters:
+        - $ref: '#/components/parameters/PWAcc'
+        - $ref: '#/components/parameters/OutputFormatSimple'
+      responses:
+        '200':
+          description: "Successful response with pathway data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathwaySummary'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/PathwaySummary'
+        '404':
+          description: "Pathway accession not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /assay/aid/{aid}/doseresponse/{output}:
+    get:
+      summary: "Retrieve assay dose-response data"
+      description: "Fetch dose-response data for a given assay (AID)."
+      parameters:
+        - $ref: '#/components/parameters/AID'
+        - name: sid
+          in: query
+          required: false
+          description: "Comma-separated list of SIDs or listkey"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Dose-response data for assay"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoseResponseData'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DoseResponseData'
+        '404':
+          description: "Assay not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /assay/aid/{aid}/targets/{target_type}/{output}:
+    get:
+      summary: "Retrieve assay targets by target type"
+      description: "Fetch assay target data for a given assay (AID) and target type."
+      parameters:
+        - $ref: '#/components/parameters/AID'
+        - name: target_type
+          in: path
+          required: true
+          description: "Target type"
+          schema:
+            type: string
+            enum: [ProteinGI, ProteinName, GeneID, GeneSymbol]
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Target data for assay"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssayTargetData'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AssayTargetData'
+        '404':
+          description: "Assay not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /gene/synonym/{synonym}/summary/{output}:
+    get:
+      summary: "Retrieve gene summary by synonym"
+      description: "Fetch gene summary information for a given gene synonym."
+      parameters:
+        - name: synonym
+          in: path
+          required: true
+          description: "Gene synonym"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/OutputFormatSimple'
+      responses:
+        '200':
+          description: "Gene summary for synonym"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneSummary'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GeneSummary'
+        '404':
+          description: "Gene not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /protein/synonym/{synonym}/summary/{output}:
+    get:
+      summary: "Retrieve protein summary by synonym"
+      description: "Fetch protein summary information for a given protein synonym."
+      parameters:
+        - name: synonym
+          in: path
+          required: true
+          description: "Protein synonym"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/OutputFormatSimple'
+      responses:
+        '200':
+          description: "Protein summary for synonym"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProteinSummary'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ProteinSummary'
+        '404':
+          description: "Protein not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compound/cid/{cid}/conformers/{output}:
+    get:
+      summary: "Retrieve compound conformers by CID"
+      description: "Fetch conformer data for a given compound (CID)."
+      parameters:
+        - $ref: '#/components/parameters/CID'
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "List of conformers for compound"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConformersData'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ConformersData'
+        '404':
+          description: "Compound not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compound/fastsubstructure/smiles/{smiles}/cids/{output}:
+    get:
+      summary: "Search within a previous result using cache key"
+      description: "Performs a substructure search using SMILES and filters results using a cache key."
+      parameters:
+        - name: smiles
+          in: path
+          required: true
+          description: "SMILES representation"
+          schema:
+            type: string
+        - name: cachekey
+          in: query
+          required: true
+          description: "Cache key from a previous search"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Filtered results based on previous search"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: "Invalid search parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "No matching compounds found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /classification/hnid/{hnid}/{idtype}/{output}:
+    get:
+      summary: "Retrieve classification nodes as cache key"
+      description: "Fetch classification data for a given hierarchy node ID (HNID) and identifier type."
+      parameters:
+        - $ref: '#/components/parameters/HNID'
+        - $ref: '#/components/parameters/IDType'
+        - $ref: '#/components/parameters/OutputFormatSimple'
+        - name: list_return
+          in: query
+          required: true
+          description: "Retrieve as cache key"
+          schema:
+            type: string
+            enum: [cachekey]
+      responses:
+        '200':
+          description: "Cache key for classification node results"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationData'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ClassificationData'
+        '404':
+          description: "Classification node not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compound/listkey/{listkey}/cids/{output}:
+    get:
+      summary: "Retrieve compounds by listkey with pagination"
+      description: "Fetch compounds using a listkey with pagination support."
+      parameters:
+        - name: listkey
+          in: path
+          required: true
+          description: "Listkey identifier from previous request"
+          schema:
+            type: string
+        - name: listkey_start
+          in: query
+          required: false
+          description: "Start index for pagination"
+          schema:
+            type: integer
+          default: 0
+        - name: listkey_count
+          in: query
+          required: false
+          description: "Number of items to retrieve"
+          schema:
+            type: integer
+          default: 100
+        - $ref: '#/components/parameters/OutputFormat'
+      responses:
+        '200':
+          description: "Paginated list of compounds"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compound/{searchType}/{namespace}/{identifier}/cids/{output}:
+    get:
+      summary: "Compound structure search operations"
+      description: "Performs substructure, superstructure, similarity, identity, or formula searches."
+      parameters:
+        - name: searchType
+          in: path
+          required: true
+          description: "Type of search"
+          schema:
+            type: string
+            enum: [fastsubstructure, fastsuperstructure, fastsimilarity_2d, fastidentity, fastformula]
+        - name: namespace
+          in: path
+          required: true
+          description: "Input namespace"
+          schema:
+            type: string
+            enum: [smiles, inchi, sdf, cid]
+        - name: identifier
+          in: path
+          required: true
+          description: "Structure identifier"
+          schema:
+            type: string
+        - name: output
+          in: path
+          required: true
+          description: "Output format"
+          schema:
+            type: string
+            enum: [XML, JSON]
+        - $ref: '#/components/parameters/Threshold'
+        - $ref: '#/components/parameters/identity_type'
+        - $ref: '#/components/parameters/MatchIsotopes'
+        - $ref: '#/components/parameters/MatchCharges'
+        - $ref: '#/components/parameters/MaxRecords'
+        - $ref: '#/components/parameters/MaxSeconds'
+      responses:
+        '200':
+          description: "Successful search results"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  CIDs:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: "Invalid search parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "No matching compounds found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Additional paths would continue here, corrected in a similar manner.
+
+components:
+
+  parameters:
+
+    CID:
+      name: cid
+      in: path
+      required: true
+      description: "Compound identifier (CID)"
+      schema:
+        type: integer
+
+    CompoundOperation:
+      name: operation
+      in: path
+      required: true
+      description: "Compound operation to perform"
+      schema:
+        type: string
+        enum: [record, property, synonyms, sids, aids, classification, description, conformers]
+
+    OutputFormat:
+      name: output
+      in: path
+      required: true
+      description: "Output format"
+      schema:
+        type: string
+        enum: [XML, JSON, JSONP, ASNT, ASNB, SDF, CSV, TXT, PNG]
+
+    OutputFormatSimple:
+      name: output
+      in: path
+      required: true
+      description: "Output format"
+      schema:
+        type: string
+        enum: [XML, JSON]
+
+    SID:
+      name: sid
+      in: path
+      required: true
+      description: "Substance identifier (SID)"
+      schema:
+        type: integer
+
+    SubstanceOperation:
+      name: operation
+      in: path
+      required: true
+      description: "Substance operation to perform"
+      schema:
+        type: string
+        enum: [record, synonyms, cids, aids, classification, description]
+
+    AID:
+      name: aid
+      in: path
+      required: true
+      description: "Assay identifier (AID)"
+      schema:
+        type: integer
+
+    AssayOperation:
+      name: operation
+      in: path
+      required: true
+      description: "Assay operation to perform"
+      schema:
+        type: string
+        enum: [record, concise, description, summary, doseresponse, targets]
+
+    GeneID:
+      name: geneid
+      in: path
+      required: true
+      description: "NCBI Gene identifier"
+      schema:
+        type: integer
+
+    TaxID:
+      name: taxid
+      in: path
+      required: true
+      description: "NCBI Taxonomy ID"
+      schema:
+        type: integer
+
+    PWAcc:
+      name: pwacc
+      in: path
+      required: true
+      description: "Pathway accession (e.g., Reactome:R-HSA-199420)"
+      schema:
+        type: string
+
+    HNID:
+      name: hnid
+      in: path
+      required: true
+      description: "Hierarchy Node ID"
+      schema:
+        type: integer
+
+    IDType:
+      name: idtype
+      in: path
+      required: true
+      description: "Type of identifiers to retrieve"
+      schema:
+        type: string
+        enum: [cid, sid, aid, patent, geneid, protein, taxonomyid, pathwayid, cellid]
+
+    Threshold:
+      name: Threshold
+      in: query
+      required: false
+      description: "Minimum Tanimoto score for similarity search"
+      schema:
+        type: integer
+
+    identity_type:
+      name: identity_type
+      in: query
+      required: false
+      description: "Identity search type"
+      schema:
+        type: string
+        enum: [same_connectivity, same_tautomer, same_stereo, same_isotope, same_stereo_isotope, nonconflicting_stereo, same_isotope_nonconflicting_stereo]
+
+    MatchIsotopes:
+      name: MatchIsotopes
+      in: query
+      required: false
+      description: "Atoms must match specified isotopes"
+      schema:
+        type: boolean
+
+    MatchCharges:
+      name: MatchCharges
+      in: query
+      required: false
+      description: "Atoms must match specified charges"
+      schema:
+        type: boolean
+
+    MaxRecords:
+      name: MaxRecords
+      in: query
+      required: false
+      description: "Maximum number of records to return"
+      schema:
+        type: integer
+
+    MaxSeconds:
+      name: MaxSeconds
+      in: query
+      required: false
+      description: "Maximum search time in seconds"
+      schema:
+        type: integer
+
+    # Other parameters would be defined here similarly.
+
+  schemas:
+
+    CompoundRecord:
+      type: object
+      properties:
+        CID:
+          type: integer
+        MolecularFormula:
+          type: string
+        MolecularWeight:
+          type: number
+        CanonicalSMILES:
+          type: string
+        InChIKey:
+          type: string
+
+    SubstanceRecord:
+      type: object
+      properties:
+        SID:
+          type: integer
+        Synonyms:
+          type: array
+          items:
+            type: string
+        SourceName:
+          type: string
+
+    AssayRecord:
+      type: object
+      properties:
+        AID:
+          type: integer
+        Description:
+          type: string
+        ActivityOutcome:
+          type: string
+
+    GeneSummary:
+      type: object
+      properties:
+        GeneID:
+          type: integer
+        Symbol:
+          type: string
+        Name:
+          type: string
+        TaxonomyID:
+          type: integer
+        Description:
+          type: string
+
+    TaxonomySummary:
+      type: object
+      properties:
+        TaxonomyID:
+          type: integer
+        ScientificName:
+          type: string
+        CommonName:
+          type: string
+        Rank:
+          type: string
+        Synonyms:
+          type: array
+          items:
+            type: string
+
+    PathwaySummary:
+      type: object
+      properties:
+        PathwayAccession:
+          type: string
+        SourceName:
+          type: string
+        Name:
+          type: string
+        Category:
+          type: string
+        Description:
+          type: string
+        TaxonomyID:
+          type: integer
+
+    ProteinSummary:
+      type: object
+      properties:
+        Accession:
+          type: string
+        Name:
+          type: string
+        TaxonomyID:
+          type: integer
+        Synonyms:
+          type: array
+          items:
+            type: string
+
+    ClassificationData:
+      type: object
+      properties:
+        HNID:
+          type: integer
+        NodeName:
+          type: string
+        Identifiers:
+          type: array
+          items:
+            type: integer
+
+    DoseResponseData:
+      type: object
+      properties:
+        AID:
+          type: integer
+        Data:
+          type: array
+          items:
+            type: object
+            properties:
+              SID:
+                type: integer
+              DoseResponseCurve:
+                type: array
+                items:
+                  type: number
+
+    AssayTargetData:
+      type: object
+      properties:
+        AID:
+          type: integer
+        Targets:
+          type: array
+          items:
+            type: object
+            properties:
+              TargetType:
+                type: string
+              TargetIdentifier:
+                type: string
+
+    ConformersData:
+      type: object
+      properties:
+        CID:
+          type: integer
+        Conformers:
+          type: array
+          items:
+            type: object
+            properties:
+              ConformerID:
+                type: integer
+              Coordinates:
+                type: array
+                items:
+                  type: number
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
