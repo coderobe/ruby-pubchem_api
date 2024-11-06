@@ -24,11 +24,9 @@ A comprehensive Ruby library for interacting with the [PubChem PUG REST API](htt
 
 - **Comprehensive Endpoint Coverage**: Access various PubChem resources such as compounds, substances, assays, genes, proteins, and more.
 - **Object Mapping**: API responses are mapped to Ruby classes, allowing easy access to data without handling raw JSON or XML.
-- **HTTP Requests with HTTParty**: Efficient and clean HTTP requests using the `httparty` gem.
-- **XML Parsing with Nokogiri**: Parse XML responses when necessary using `nokogiri`.
 - **Error Handling**: Custom `APIError` class provides detailed error messages and codes.
 - **Parameter Validation**: Ensures that only valid parameters are sent to the API.
-- **Extensible Design**: Easily extend the library for additional endpoints or complex data mapping.
+- **Extensible Design**: The code structure should make it easy to extend the library with additional endpoints or complex data mapping, in case something is missing.
 
 ## Installation
 
@@ -185,10 +183,10 @@ rescue PubChemAPI::APIError => e
 end
 ```
 
-The `APIError` includes:
+`APIError` definition:
 
-- `e.code`: HTTP status code
-- `e.message`: Error message from the API
+- `APIError.code`: HTTP status code
+- `APIError.message`: Error message from the API
 
 
 ## License
