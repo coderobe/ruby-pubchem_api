@@ -2,6 +2,9 @@
 
 A comprehensive Ruby library for interacting with the [PubChem PUG REST API](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest). This library provides a user-friendly interface to access PubChem data and services, mapping API responses onto Ruby classes for seamless integration into your applications.
 
+
+**Warning:** This implementation is unfinished and has known issues. Basic usage is functional, no guarantees beyond that.
+
 ## Table of Contents
 
 - [Features](#features)
