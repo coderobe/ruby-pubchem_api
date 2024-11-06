@@ -24,11 +24,24 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @cid = data['CID']
-      @molecular_formula = data['MolecularFormula']
-      @molecular_weight = data['MolecularWeight']
-      @canonical_smiles = data['CanonicalSMILES']
-      @inchi_key = data['InChIKey']
+      compound = data['PC_Compounds'].first
+      @cid = compound['id']['id']['cid']
+
+      # Extract properties from the 'props' array
+      props = compound['props']
+      @molecular_formula = extract_prop(props, 'Molecular Formula')
+      @molecular_weight = extract_prop(props, 'Molecular Weight').to_f
+      @canonical_smiles = extract_prop(props, 'SMILES', 'Canonical')
+      @inchi_key = extract_prop(props, 'InChIKey', 'Standard')
+    end
+
+    private
+
+    def extract_prop(props, label, name = nil)
+      prop = props.find do |p|
+        p['urn']['label'] == label && (name.nil? || p['urn']['name'] == name)
+      end
+      prop ? prop['value'].values.first : nil
     end
   end
 
@@ -37,20 +50,24 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @sid = data['SID']
-      @synonyms = data['Synonyms']
-      @source_name = data['SourceName']
+      substance = data['PC_Substances'].first
+      @sid = substance['sid']['id']
+      @synonyms = substance['synonyms']
+      @source_name = substance['source']['db']['name']
     end
   end
 
   class AssayRecord < APIResponse
-    attr_reader :aid, :description, :activity_outcome
+    attr_reader :aid, :name, :description
 
     def initialize(data)
       super(data)
-      @aid = data['AID']
-      @description = data['Description']
-      @activity_outcome = data['ActivityOutcome']
+      assay_container = data['PC_AssayContainer'].first
+      assay = assay_container['assay']
+      descr = assay['descr']
+      @aid = descr['aid']['id']
+      @name = descr['name']
+      @description = descr['description']
     end
   end
 
@@ -59,11 +76,12 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @gene_id = data['GeneID']
-      @symbol = data['Symbol']
-      @name = data['Name']
-      @taxonomy_id = data['TaxonomyID']
-      @description = data['Description']
+      gene = data['InformationList']['Information'].first
+      @gene_id = gene['GeneID']
+      @symbol = gene['Symbol']
+      @name = gene['Name']
+      @taxonomy_id = gene['TaxID']
+      @description = gene['Description']
     end
   end
 
@@ -72,11 +90,12 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @taxonomy_id = data['TaxonomyID']
-      @scientific_name = data['ScientificName']
-      @common_name = data['CommonName']
-      @rank = data['Rank']
-      @synonyms = data['Synonyms']
+      taxon = data['TaxaInfo'].first
+      @taxonomy_id = taxon['TaxId']
+      @scientific_name = taxon['ScientificName']
+      @common_name = taxon['OtherNames']['CommonName']
+      @rank = taxon['Rank']
+      @synonyms = taxon['OtherNames']['Synonym']
     end
   end
 
@@ -85,12 +104,13 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @pathway_accession = data['PathwayAccession']
-      @source_name = data['SourceName']
-      @name = data['Name']
-      @category = data['Category']
-      @description = data['Description']
-      @taxonomy_id = data['TaxonomyID']
+      pathway = data['Pathway'].first
+      @pathway_accession = pathway['PathwayId']
+      @source_name = pathway['SourceName']
+      @name = pathway['Name']
+      @category = pathway['Category']
+      @description = pathway['Description']
+      @taxonomy_id = pathway['TaxId']
     end
   end
 
@@ -99,10 +119,11 @@ module PubChemAPI
 
     def initialize(data)
       super(data)
-      @accession = data['Accession']
-      @name = data['Name']
-      @taxonomy_id = data['TaxonomyID']
-      @synonyms = data['Synonyms']
+      protein = data['InformationList']['Information'].first
+      @accession = protein['Accession']
+      @name = protein['Title']
+      @taxonomy_id = protein['TaxId']
+      @synonyms = protein['Synonym']
     end
   end
 
@@ -189,7 +210,7 @@ module PubChemAPI
       validate_output_format(output, OUTPUT_FORMATS)
       path = "/assay/aid/#{aid}/doseresponse/#{output}"
       response = self.class.get(path, query: options)
-      parse_response(response, output, 'DoseResponseData')
+      parse_response(response, output)
     end
 
     # Retrieve assay targets by target type
@@ -198,7 +219,7 @@ module PubChemAPI
       validate_output_format(output, OUTPUT_FORMATS)
       path = "/assay/aid/#{aid}/targets/#{target_type}/#{output}"
       response = self.class.get(path, query: options)
-      parse_response(response, output, 'AssayTargetData')
+      parse_response(response, output)
     end
 
     # Retrieve gene summary by synonym
@@ -224,7 +245,7 @@ module PubChemAPI
       validate_output_format(output, OUTPUT_FORMATS)
       path = "/compound/cid/#{cid}/conformers/#{output}"
       response = self.class.get(path, query: options)
-      parse_response(response, output, 'ConformersData')
+      parse_response(response, output)
     end
 
     # Search within a previous result using cache key
@@ -244,7 +265,7 @@ module PubChemAPI
       path = "/classification/hnid/#{hnid}/#{idtype}/#{output}"
       options = options.merge('list_return' => list_return)
       response = self.class.get(path, query: options)
-      parse_response(response, output, 'ClassificationData')
+      parse_response(response, output)
     end
 
     # Retrieve compounds by listkey with pagination
@@ -294,16 +315,9 @@ module PubChemAPI
       if response.success?
         if output_format == 'JSON'
           data = response.parsed_response
-          data = data.first[1].first if data.length == 1 && data.first.length == 2
-          require 'pry'
-          binding.pry
           if schema_class
             klass = PubChemAPI.const_get(schema_class)
-            if data.is_a?(Array)
-              data.map { |item| klass.new(item) }
-            else
-              klass.new(data)
-            end
+            klass.new(data)
           else
             data
           end
@@ -325,7 +339,7 @@ module PubChemAPI
 
     # Handle error responses
     def handle_error_response(response)
-      if response.headers['Content-Type'].include?('application/json')
+      if response.headers['Content-Type'] && response.headers['Content-Type'].include?('application/json')
         error_info = response.parsed_response
         message = error_info['Fault']['Message'] rescue 'Unknown error'
         raise APIError.new(message, response.code)
