@@ -20,7 +20,7 @@ module PubChemAPI
   end
 
   class CompoundRecord < APIResponse
-    attr_reader :cid, :molecular_formula, :molecular_weight, :canonical_smiles, :inchi_key
+    attr_reader :cid, :iupac_name, :molecular_formula, :molecular_weight, :canonical_smiles, :inchi, :inchi_key
 
     def initialize(data)
       super(data)
@@ -29,9 +29,11 @@ module PubChemAPI
 
       # Extract properties from the 'props' array
       props = compound['props']
+      @iupac_name = extract_prop(props, 'IUPAC Name')
       @molecular_formula = extract_prop(props, 'Molecular Formula')
-      @molecular_weight = extract_prop(props, 'Molecular Weight').to_f
+      @molecular_weight = extract_prop(props, 'Molecular Weight')
       @canonical_smiles = extract_prop(props, 'SMILES', 'Canonical')
+      @inchi = extract_prop(props, 'InChI', 'Standard')
       @inchi_key = extract_prop(props, 'InChIKey', 'Standard')
     end
 
